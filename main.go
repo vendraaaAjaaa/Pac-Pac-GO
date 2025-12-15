@@ -27,6 +27,7 @@ func main() {
 		nama    string
 		monster string
 		harta   int
+		level   int
 	}
 
 	type Karakter struct {
@@ -42,7 +43,7 @@ func main() {
 	namaPetualang = ""
 	nyawa = 100
 	keberanian = 50.0
-	koin = 10
+	koin = 50
 	punyaPeta = false
 	puntaPedangLegenda = false
 	simbol = '⚔'
@@ -50,6 +51,7 @@ func main() {
 	// Inisialisasi array
 	inventory[0] = "Obor"
 	inventory[1] = "Ramuan Kecil"
+	inventory[2] = "Pelindung Dada"
 
 	// Inisialisasi map
 	hargaItem["Pedang"] = 100
@@ -60,9 +62,9 @@ func main() {
 	// Buat objek struct
 	pemain := Karakter{nama: "", level: 1, exp: 0.0, senjata: "Tongkat"}
 
-	var lokasiHutan = Lokasi{nama: "Hutan Angker", monster: "Goblin", harta: 50}
-	var lokasiGua = Lokasi{nama: "Gua Gelap", monster: "Troll", harta: 100}
-	var lokasiDanau = Lokasi{nama: "Danau Terkutuk", monster: "Naga", harta: 500}
+	var lokasiHutan = Lokasi{nama: "Hutan Angker", monster: "Goblin", harta: 50, level: 1}
+	var lokasiGua = Lokasi{nama: "Gua Gelap", monster: "Troll", harta: 100, level: 2}
+	var lokasiDanau = Lokasi{nama: "Danau Terkutuk", monster: "Naga", harta: 500, level: 3}
 
 	var lokasiSaatIni Lokasi
 	var pilihanMenu int
@@ -80,6 +82,7 @@ func main() {
 	fmt.Printf("\nSelamat datang, %s!\n", pemain.nama)
 	fmt.Println("Kesehatan:", nyawa, "| Keberanian:", keberanian, "| Koin:", koin)
 	fmt.Println("Senjata:", pemain.senjata)
+	fmt.Println("TIP: Kunjungi toko dulu untuk beli Pedang (100 koin)!")
 
 	// =========== GAME LOOP ===========
 	gameBerjalan := true
@@ -88,9 +91,9 @@ func main() {
 	for gameBerjalan {
 		fmt.Printf("\n=== RONDE %d ===\n", ronde)
 		fmt.Println("Pilih lokasi yang akan dijelajahi:")
-		fmt.Println("1. Hutan Angker (Goblin)")
-		fmt.Println("2. Gua Gelap (Troll)")
-		fmt.Println("3. Danau Terkutuk (Naga)")
+		fmt.Println("1. Hutan Angker (Goblin) - Level 1")
+		fmt.Println("2. Gua Gelap (Troll) - Level 2")
+		fmt.Println("3. Danau Terkutuk (Naga) - Level 3")
 		fmt.Println("4. Kunjungi toko")
 		fmt.Println("5. Cek status")
 		fmt.Println("6. Lihat inventory")
@@ -127,7 +130,8 @@ func main() {
 			fmt.Println("\n1. Beli Pedang (100 koin)")
 			fmt.Println("2. Beli Perisai (80 koin)")
 			fmt.Println("3. Beli Ramuan Besar (150 koin)")
-			fmt.Println("4. Kembali")
+			fmt.Println("4. Jual Ramuan Kecil (20 koin)")
+			fmt.Println("5. Kembali")
 			fmt.Print("Pilihan: ")
 
 			var pilihanBeli int
@@ -136,7 +140,8 @@ func main() {
 			if pilihanBeli == 1 && koin >= 100 {
 				koin -= 100
 				pemain.senjata = "Pedang"
-				fmt.Println("Anda membeli Pedang!")
+				fmt.Println("Anda membeli Pedang! (+20% keberanian)")
+				keberanian += 20.0
 			} else if pilihanBeli == 2 && koin >= 80 {
 				koin -= 80
 				// Cari slot kosong di inventory
@@ -155,6 +160,16 @@ func main() {
 				}
 				fmt.Println("Anda menggunakan Ramuan Besar! +50 HP")
 			} else if pilihanBeli == 4 {
+				// Jual Ramuan Kecil
+				for i := 0; i < len(inventory); i++ {
+					if inventory[i] == "Ramuan Kecil" {
+						inventory[i] = ""
+						koin += 20
+						fmt.Println("Ramuan Kecil terjual! +20 koin")
+						break
+					}
+				}
+			} else if pilihanBeli == 5 {
 				// Kembali ke menu
 			} else {
 				fmt.Println("Koin tidak cukup atau pilihan tidak valid!")
@@ -199,115 +214,189 @@ func main() {
 
 		// =========== PERTEMPURAN ===========
 		if pilihanMenu >= 1 && pilihanMenu <= 3 {
-			fmt.Printf("Seekor %s muncul!\n", lokasiSaatIni.monster)
-			fmt.Println("1. Serang dengan senjata")
-			fmt.Println("2. Gunakan item dari inventory")
-			fmt.Println("3. Kabur")
-			fmt.Print("Pilihan (1-3): ")
+			pertempuranSelesai := false
 
-			var pilihanTempur int
-			fmt.Scanln(&pilihanTempur)
+			for !pertempuranSelesai {
+				fmt.Printf("\nSeekor %s (Level %d) muncul!\n", lokasiSaatIni.monster, lokasiSaatIni.level)
+				fmt.Println("1. Serang dengan senjata")
+				fmt.Println("2. Gunakan item dari inventory")
+				fmt.Println("3. Kabur")
+				fmt.Print("Pilihan (1-3): ")
 
-			// PERCABANGAN if-else
-			if pilihanTempur == 1 {
-				fmt.Printf("Anda menyerang %s dengan %s %c\n",
-					lokasiSaatIni.monster, pemain.senjata, simbol)
+				var pilihanTempur int
+				fmt.Scanln(&pilihanTempur)
 
-				// Logika pertempuran sederhana
-				if pemain.senjata == "Pedang" && keberanian > 40 {
-					fmt.Printf("%s dikalahkan! +%d koin\n",
-						lokasiSaatIni.monster, lokasiSaatIni.harta)
-					koin += lokasiSaatIni.harta
-					pemain.exp += 25.0
-					musuhDikalahkan = append(musuhDikalahkan, lokasiSaatIni.monster)
+				// PERCABANGAN if-else
+				if pilihanTempur == 1 {
+					fmt.Printf("Anda menyerang %s dengan %s %c\n",
+						lokasiSaatIni.monster, pemain.senjata, simbol)
 
-					// Cek level up
-					for pemain.exp >= 100 {
-						pemain.level++
-						pemain.exp -= 100
-						nyawa += 20
-						fmt.Printf("LEVEL UP! Sekarang level %d\n", pemain.level)
-					}
-				} else if pemain.senjata == "Tongkat" && keberanian > 60 {
-					fmt.Printf("%s dikalahkan! +%d koin\n",
-						lokasiSaatIni.monster, lokasiSaatIni.harta/2)
-					koin += lokasiSaatIni.harta / 2
-					pemain.exp += 15.0
-				} else {
-					fmt.Printf("%s terlalu kuat! Anda kalah -20 HP\n",
-						lokasiSaatIni.monster)
-					nyawa -= 20
-				}
+					// LOGIKA PERTEMPURAN YANG DIPERBAIKI
+					if pemain.senjata == "Pedang" && keberanian > 30 {
+						fmt.Printf("%s dikalahkan! +%d koin\n",
+							lokasiSaatIni.monster, lokasiSaatIni.harta)
+						koin += lokasiSaatIni.harta
+						pemain.exp += 25.0
+						musuhDikalahkan = append(musuhDikalahkan, lokasiSaatIni.monster)
+						keberanian += 10.0
 
-			} else if pilihanTempur == 2 {
-				fmt.Println("Item dalam inventory:")
-				// PERULANGAN while style
-				i := 0
-				for i < len(inventory) {
-					if inventory[i] != "" {
-						fmt.Printf("%d. %s\n", i+1, inventory[i])
-					}
-					i++
-				}
-
-				fmt.Print("Pilih item (0 untuk batal): ")
-				var pilihItem int
-				fmt.Scanln(&pilihItem)
-
-				if pilihItem > 0 && pilihItem <= len(inventory) && inventory[pilihItem-1] != "" {
-					item := inventory[pilihItem-1]
-					fmt.Printf("Anda menggunakan %s\n", item)
-
-					if item == "Ramuan Kecil" {
-						nyawa += 20
-						if nyawa > 100 {
-							nyawa = 100
+						// Cek level up
+						for pemain.exp >= 100 {
+							pemain.level++
+							pemain.exp -= 100
+							nyawa += 20
+							keberanian += 15.0
+							fmt.Printf("LEVEL UP! Sekarang level %d (+20 HP, +15 keberanian)\n", pemain.level)
 						}
-						fmt.Println("+20 HP!")
-					} else if item == "Obor" {
-						fmt.Println("Obor menerangi jalan, monster kabur!")
-						koin += 20
+						pertempuranSelesai = true
+					} else if pemain.senjata == "Tongkat" && keberanian > 40 {
+						fmt.Printf("%s dikalahkan dengan susah payah! +%d koin\n",
+							lokasiSaatIni.monster, lokasiSaatIni.harta/2)
+						koin += lokasiSaatIni.harta / 2
+						pemain.exp += 15.0
+						keberanian += 5.0
+						pertempuranSelesai = true
+					} else if pemain.senjata == "Pedang Legenda" {
+						fmt.Printf("%s dikalahkan dengan mudah! +%d koin\n",
+							lokasiSaatIni.monster, lokasiSaatIni.harta*2)
+						koin += lokasiSaatIni.harta * 2
+						pemain.exp += 40.0
+						musuhDikalahkan = append(musuhDikalahkan, lokasiSaatIni.monster)
+						pertempuranSelesai = true
+					} else {
+						fmt.Printf("%s terlalu kuat! Anda kalah -15 HP\n",
+							lokasiSaatIni.monster)
+						nyawa -= 15
+						keberanian -= 5.0
+						pertempuranSelesai = true
 					}
 
-					// Hapus item dari inventory
-					inventory[pilihItem-1] = ""
+				} else if pilihanTempur == 2 {
+					itemDigunakan := false
+
+					for !itemDigunakan {
+						fmt.Println("\nItem dalam inventory:")
+
+						// PERULANGAN while style untuk inventory
+						i := 0
+						for i < len(inventory) {
+							if inventory[i] != "" {
+								fmt.Printf("%d. %s\n", i+1, inventory[i])
+							}
+							i++
+						}
+
+						fmt.Println("0. Kembali ke menu pertempuran")
+						fmt.Print("Pilih item (0 untuk batal): ")
+
+						var pilihItem int
+						fmt.Scanln(&pilihItem)
+
+						// Jika memilih 0, kembali ke menu pertempuran
+						if pilihItem == 0 {
+							fmt.Println("Batal menggunakan item.")
+							itemDigunakan = true // Keluar dari loop item
+							// TIDAK mengatur pertempuranSelesai = true, sehingga kembali ke menu pertempuran
+						} else if pilihItem > 0 && pilihItem <= len(inventory) && inventory[pilihItem-1] != "" {
+							item := inventory[pilihItem-1]
+							fmt.Printf("Anda menggunakan %s\n", item)
+
+							if item == "Ramuan Kecil" {
+								nyawa += 20
+								if nyawa > 100 {
+									nyawa = 100
+								}
+								fmt.Println("+20 HP!")
+								// Item healing tidak mengakhiri pertempuran
+								inventory[pilihItem-1] = ""
+								itemDigunakan = true
+								// Pertempuran belum selesai, bisa memilih aksi lagi
+								fmt.Println("Pertempuran berlanjut...")
+
+							} else if item == "Obor" {
+								fmt.Println("Obor menerangi jalan, monster kabur!")
+								koin += 30
+								keberanian += 5.0
+								inventory[pilihItem-1] = ""
+								itemDigunakan = true
+								pertempuranSelesai = true // Monster kabur, pertempuran selesai
+
+							} else if item == "Perisai" || item == "Pelindung Dada" {
+								fmt.Println("Anda bertahan dengan perisai! Monster mundur.")
+								koin += 25
+								inventory[pilihItem-1] = ""
+								itemDigunakan = true
+								pertempuranSelesai = true // Monster mundur, pertempuran selesai
+
+							} else {
+								fmt.Println("Item tidak dikenal!")
+								// Tetap dalam loop item
+							}
+						} else {
+							fmt.Println("Item tidak valid!")
+							// Tetap dalam loop item
+						}
+					}
+
+				} else if pilihanTempur == 3 {
+					fmt.Println("Anda kabur dengan selamat...")
+					keberanian -= 10.0
+					if keberanian < 0 {
+						keberanian = 0
+					}
+					pertempuranSelesai = true
+
 				} else {
-					fmt.Println("Item tidak valid!")
+					fmt.Println("Pilihan tidak valid! Silakan pilih 1-3")
+					// Loop akan berlanjut, meminta input lagi
 				}
 
-			} else if pilihanTempur == 3 {
-				fmt.Println("Anda kabur dengan selamat...")
-				keberanian -= 10.0
-				if keberanian < 0 {
-					keberanian = 0
+				// Cek jika pemain mati selama pertempuran
+				if nyawa <= 0 {
+					fmt.Println("\n💀 NYAWA ANDA HABIS SELAMA PERTEMPURAN!")
+					pertempuranSelesai = true
+					gameBerjalan = false
 				}
-			} else {
-				fmt.Println("Pilihan tidak valid!")
 			}
 
-			// Cek apakah menemukan peta
-			if pilihanMenu == 1 && ronde%2 == 0 {
-				fmt.Println("Anda menemukan peta harta karun!")
+			// Cek apakah menemukan peta (setelah pertempuran selesai)
+			if pilihanMenu == 1 && ronde%3 == 0 && nyawa > 0 {
+				fmt.Println("Anda menemukan peta harta karun di rerumputan!")
 				punyaPeta = true
 			}
 
-			// Cek apakah menemukan pedang legenda
-			if pilihanMenu == 2 && koin >= 200 && !puntaPedangLegenda {
-				fmt.Println("Anda menemukan Pedang Legenda di gua!")
+			// Cek apakah menemukan pedang legenda (setelah pertempuran selesai)
+			if pilihanMenu == 2 && koin >= 200 && !puntaPedangLegenda && pemain.level >= 3 && nyawa > 0 {
+				fmt.Println("Anda menemukan Pedang Legenda tersembunyi di dalam gua!")
 				pemain.senjata = "Pedang Legenda"
 				puntaPedangLegenda = true
+				keberanian += 30.0
+			}
+
+			// =========== KONDISI KEMENANGAN DIPERBAIKI ===========
+			// CARA 1: Menjadi legendaris
+			if punyaPeta && puntaPedangLegenda && koin >= 1000 && nyawa > 0 {
+				fmt.Println("\n🎉 SELAMAT! ANDA MENJADI PETUALANG LEGENDARIS! 🎉")
+				fmt.Println("Anda memiliki peta, pedang legenda, dan kaya raya!")
+				gameBerjalan = false
+			}
+			// CARA 2: Mengalahkan Naga (alternatif)
+			if lokasiSaatIni.monster == "Naga" && (pemain.senjata == "Pedang" || pemain.senjata == "Pedang Legenda") && keberanian > 40 && nyawa > 0 {
+				fmt.Println("\n🐉 EPIC VICTORY! ANDA MENGALAHKAN NAGA! 🐉")
+				fmt.Println("Anda menyelamatkan kerajaan dan menjadi pahlawan!")
+				koin += 1000
+				gameBerjalan = false
+			}
+			// CARA 3: Level maksimal
+			if pemain.level >= 10 && nyawa > 0 {
+				fmt.Println("\n👑 LEGENDARY STATUS! Level maksimal tercapai!")
+				fmt.Println("Anda diakui sebagai petualang terhebat sepanjang masa!")
+				gameBerjalan = false
 			}
 
 			// Cek game over
 			if nyawa <= 0 {
 				fmt.Println("\n💀 NYAWA ANDA HABIS! GAME OVER 💀")
-				gameBerjalan = false
-			}
-
-			// Cek kemenangan
-			if punyaPeta && puntaPedangLegenda && koin >= 1000 {
-				fmt.Println("\n🎉 SELAMAT! ANDA MENJADI PETUALANG LEGENDARIS! 🎉")
-				fmt.Println("Anda memiliki peta, pedang legenda, dan kaya raya!")
 				gameBerjalan = false
 			}
 
@@ -340,6 +429,7 @@ func main() {
 		for index, musuh := range musuhDikalahkan {
 			fmt.Printf("%d. %s\n", index+1, musuh)
 		}
+		fmt.Printf("Total: %d monster dikalahkan!\n", len(musuhDikalahkan))
 	} else {
 		fmt.Println("\nTidak ada musuh yang dikalahkan.")
 	}
