@@ -43,7 +43,7 @@ func main() {
 				} else if maze[r][c] == 2 {
 					fmt.Print(". ") // Makanan
 				} else {
-					fmt.Print("  ") // Jalan kosong
+					fmt.Print("  ") // Jalan kosong (pastikan pakai spasi biasa)
 				}
 			}
 			fmt.Println()
@@ -67,7 +67,7 @@ func main() {
 		} else if move == "d" {
 			newCol++
 		} else if move == "q" {
-			gameRunning = false
+			clearScreen() // Bersihkan layar terakhir kali sebelum exit
 			fmt.Println("Game Berhenti. Skor Akhir:", score)
 			break
 		}
@@ -77,7 +77,9 @@ func main() {
 			playerRow = newRow
 			playerCol = newCol
 		} else {
-			fmt.Println("Ups! Ada dinding!")
+			// Kita hilangkan print "Ups Ada Dinding" karena akan langsung terhapus oleh clearScreen() di loop berikutnya
+			// Jadi user tidak sempat membacanya.
+			// Kalau mau tetap ada, logika 'clearScreen' harus dipindah.
 		}
 
 		// 5. Percabangan buat Cek Makan Titik
@@ -88,17 +90,21 @@ func main() {
 
 		// Cek Menang (kalo skor sampe jumlah tertentu)
 		if score == 280 { // Angka ini tergantung jumlah titik di peta
+			clearScreen()
 			fmt.Println("Selamat! Kamu Menang!")
 			gameRunning = false
 		}
 	}
 }
 
-// Fungsi pembantu buat bersihin terminal
+// Fungsi pembantu buat bersihin terminal yang SUDAH DIPERBAIKI
 func clearScreen() {
-	cmd := exec.Command("clear")
+	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cls")
+		// Menggunakan cmd /c cls agar command prompt Windows merespon
+		cmd = exec.Command("cmd", "/c", "cls")
+	} else {
+		cmd = exec.Command("clear")
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Run()
