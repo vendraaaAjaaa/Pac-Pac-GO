@@ -32,10 +32,10 @@ func main() {
 		fmt.Println("Skor:", score)
 		fmt.Println("Kontrol: w (atas), s (bawah), a (kiri), d (kanan), q (keluar)")
 
-		// 2. Perulangan Bersarang (Nested Loop) untuk ngegambar petanya
+		// 2. Nested Loop untuk ngegambar petanya
 		for r := 0; r < len(maze); r++ {
 			for c := 0; c < len(maze[r]); c++ {
-				// Percabangan buat nentiin apa yang digambar
+				// Percabangan buat nentuin apa yang digambar
 				if r == playerRow && c == playerCol {
 					fmt.Print("C ") // Pacman
 				} else if maze[r][c] == 1 {
@@ -88,7 +88,7 @@ func main() {
 			maze[playerRow][playerCol] = 0 // Ubah jadi kosong pas udah dimakan
 		}
 
-		// Cek Menang (kalo skor sampe jumlah tertentu)
+		// Cek Menang (kalo skor udah nyentuh semua titik)
 		if score == 280 { // Angka ini tergantung jumlah titik di peta
 			clearScreen()
 			fmt.Println("Selamat! Kamu Menang!")
